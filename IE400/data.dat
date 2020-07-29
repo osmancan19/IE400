@@ -3,7 +3,6 @@
  * Author: Osmancan
  * Creation Date: 23 Tem 2020 at 20:48:13
  *********************************************/
- 
 SheetConnection sheet("data.xlsx");
 
 //locations from excell
