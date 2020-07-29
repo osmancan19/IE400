@@ -28,15 +28,28 @@ int RM_to[r3]=...;
 string RM_roadMaterial[r3]=...;
 
 
+
 subject to
 {
  // minimize ...
 }
+
+tuple edge {
+  int i;
+  int j;
+}
+
+setof(edge) edges = {<i,j>| i,j in r1 : i != j};
+float c[edges];
+
 execute {
     function getDistance(xi, xj) {
-          return Math.sqrt(Math.pow(Locations_X_Coordinate[xi] - Locations_X_Coordinate[xj], 2) + Math.pow(Locations_Y_Coordinate[xi] - Locations_Y_Coordinate[xj], 2));
+        return Math.sqrt(Math.pow(Locations_X_Coordinate[xi] - Locations_X_Coordinate[xj], 2) + Math.pow(Locations_Y_Coordinate[xi] - Locations_Y_Coordinate[xj], 2));
     }
-    
-   // writeln(" distance : ",getDistance(2, 3));
-    
+
+    for(var e in edges) {
+          c[e] = getDistance(e.i, e.j);
+    }
+   // writeln(" distance : ",getDistance(2, 3)); 
+
 }
