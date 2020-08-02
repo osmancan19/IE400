@@ -45,6 +45,11 @@ execute {
       	return Locations_Y_Coordinate[xj] - slope * Locations_X_Coordinate[xj];
     }
     
+    function isBetween(xi, xj, point_x, point_y) {
+      	return (Locations_X_Coordinate[xi] < point_x < Locations_X_Coordinate[xj] && Locations_Y_Coordinate[xi] < point_y < Locations_Y_Coordinate[xj]) || 
+      	(Locations_X_Coordinate[xi] > point_x > Locations_X_Coordinate[xj] && Locations_Y_Coordinate[xi] > point_y > Locations_Y_Coordinate[xj]);
+    }
+    
     function isOverlapping(xi, xj, rk) {
       	var slope = getSlope(xi, xj);
       	var bias = getBias(slope, xi, xj);
@@ -52,7 +57,11 @@ execute {
       	var center_y = Storms_Y_Coordinate[rk];
       	var radius = Storms_Radius[rk];
       	var delta = 4 * Math.pow(slope * (bias - center_y) - center_x, 2) - 4 * (Math.pow(slope, 2) + 1) * (Math.pow(bias - center_y, 2) + Math.pow(center_x, 2) - Math.pow(radius, 2));
-      	return (delta >= 0);
+      	var x1 = (-Math.sqrt(delta) + 2 * (slope * (bias - center_y) - center_x)) / 2 / (Math.pow(slope, 2) + 1);
+      	var y1 = slope * x1 + bias;
+      	var x2 = (Math.sqrt(delta) + 2 * (slope * (bias - center_y) - center_x)) / 2 / (Math.pow(slope, 2) + 1);
+      	var y2 = slope * x2 + bias;
+      	return (delta >= 0 && (isBetween(xi, xj, x1, y1) || isBetween(xi, xj, x2, x2)));
     }
     
     for(var e in edges) {
@@ -88,7 +97,6 @@ execute {
       		}
       	}
     } 
-    
 }
 
 // decision variable
@@ -103,17 +111,23 @@ minimize TotalTime;
 
 //constraints
 subject to {
-  
  	forall(j in r1)
  	  flow_in:
- 	  sum(i in r1: i != j && boolStorm[<i,j>] != 0) validPath[<i,j>] == 1;
+ 	  sum(i in r1: i != j) validPath[<i,j>] == 1;
  	  
  	forall(i in r1)
  	  flow_out:
- 	  sum(j in r1: j != i && boolStorm[<i,j>] != 0) validPath[<i,j>] == 1;
+ 	  sum(j in r1: j != i) validPath[<i,j>] == 1;
+ 	
+ 	forall(i in r1, j in r1: i != j)
+ 	  storm:
+ 	  if(boolStorm[<i,j>] == 0)  {
+ 	    validPath[<i,j>] == 0;
+ 	  }
  	  
  	forall(i in r1: i > 0, j in r1: j > 0 && j != i)
  	  subtour:
  	  u[i] - u[j] + 30 * validPath[<i,j>] <= 29;	  
 }
+
 
