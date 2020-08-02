@@ -1,24 +1,22 @@
 /*********************************************
  * OPL 12.10.0.0 Data
- * Author: Osmancan
+ * Author: IE400
  * Creation Date: 23 Tem 2020 at 20:48:13
  *********************************************/
+ 
 SheetConnection sheet("data.xlsx");
 
-//locations from excell
-
-Locations_No from SheetRead(sheet,"'Locations'!A2:A31");
+//locations from excel
 Locations_X_Coordinate from SheetRead(sheet,"'Locations'!B2:B31");
 Locations_Y_Coordinate from SheetRead(sheet,"'Locations'!C2:C31"); 
 
-//Storms from excell
-Storms_Center from SheetRead(sheet,"'Storms'!A3:B22");
+//Storms from excel
 Storms_Radius from SheetRead(sheet,"'Storms'!C3:C22");
 Storms_X_Coordinate from SheetRead(sheet,"'Storms'!A3:A22");
 Storms_Y_Coordinate from SheetRead(sheet,"'Storms'!B3:B22");
 
-//Road Material from excell
-RM_from from SheetRead(sheet,"'Road Material'!A2:A871");
-RM_to from SheetRead(sheet,"'Road Material'!B2:B871");
+//Road Material from excel
 RM_roadMaterial from SheetRead(sheet,"'Road Material'!C2:C871"); 
+
+
 
