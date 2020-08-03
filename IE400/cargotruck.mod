@@ -46,8 +46,11 @@ execute {
     }
     
     function isBetween(xi, xj, point_x, point_y) {
-      	return (Locations_X_Coordinate[xi] < point_x < Locations_X_Coordinate[xj] && Locations_Y_Coordinate[xi] < point_y < Locations_Y_Coordinate[xj]) || 
-      	(Locations_X_Coordinate[xi] > point_x > Locations_X_Coordinate[xj] && Locations_Y_Coordinate[xi] > point_y > Locations_Y_Coordinate[xj]);
+      	var min_x = Math.min(Locations_X_Coordinate[xi], Locations_X_Coordinate[xj]);
+      	var min_y = Math.min(Locations_Y_Coordinate[xi], Locations_Y_Coordinate[xj]);
+      	var max_x = Math.max(Locations_X_Coordinate[xi], Locations_X_Coordinate[xj]);
+      	var max_y = Math.max(Locations_Y_Coordinate[xi], Locations_Y_Coordinate[xj]);
+      	return min_x <= point_x && point_x <= max_x && min_y <= point_y && point_y <= max_y;
     }
     
     function isOverlapping(xi, xj, rk) {
@@ -56,14 +59,17 @@ execute {
       	var center_x = Storms_X_Coordinate[rk];
       	var center_y = Storms_Y_Coordinate[rk];
       	var radius = Storms_Radius[rk];
-      	var delta = 4 * Math.pow(slope * (bias - center_y) - center_x, 2) - 4 * (Math.pow(slope, 2) + 1) * (Math.pow(bias - center_y, 2) + Math.pow(center_x, 2) - Math.pow(radius, 2));
-      	var x1 = (-Math.sqrt(delta) + 2 * (slope * (bias - center_y) - center_x)) / 2 / (Math.pow(slope, 2) + 1);
-      	var y1 = slope * x1 + bias;
-      	var x2 = (Math.sqrt(delta) + 2 * (slope * (bias - center_y) - center_x)) / 2 / (Math.pow(slope, 2) + 1);
-      	var y2 = slope * x2 + bias;
-      	return (delta >= 0 && (isBetween(xi, xj, x1, y1) || isBetween(xi, xj, x2, x2)));
-    }
-    
+      	var x1 = (slope * (center_y - bias) +  center_x) / (Math.pow(slope, 2) + 1);
+      	var y1 = (bias + slope * (center_x + slope * center_y)) / (Math.pow(slope, 2) + 1);
+      	if(!isBetween(xi, xj, x1, y1)) {
+      	  	return false;
+      	}
+      	else {
+      		var projection = Math.abs(center_y - slope * center_x - bias) / Math.sqrt(Math.pow(slope, 2) + 1);
+      		return (projection <= radius);  
+      	}	
+    }  	
+  	
     for(var e in edges) {
     	distances[e] = getDistance(e.i, e.j);
     }
@@ -128,6 +134,29 @@ subject to {
  	forall(i in r1: i > 0, j in r1: j > 0 && j != i)
  	  subtour:
  	  u[i] - u[j] + 30 * validPath[<i,j>] <= 29;	  
+}
+
+{edge} used_edges = {e | e in edges: validPath[e] == 1};
+execute {
+  	writeln("The optimal time spent: ", TotalTime);
+  	var start_loc = 0;
+  	var end_loc;
+  	for(var e in used_edges) {
+  		if(e.i == start_loc) {
+  			end_loc = e.j;
+  		}
+  	}
+  	write(start_loc, "->", end_loc);
+  	start_loc = end_loc;
+  	while(start_loc != 0) {
+  		for(var e in used_edges) {
+	  		if(e.i == start_loc) {
+	  			end_loc = e.j;
+	  		}
+	  	}
+	  	write("->", end_loc);
+	  	start_loc = end_loc;
+  	}
 }
 
 
